@@ -10,7 +10,7 @@ public:
     TStack(const unsigned int _maxSize = 10);
     ~TStack();
     TStack& operator=(const TStack& stack);
-    
+
     bool isEmpty() const;
     bool isFull() const;
 
@@ -42,12 +42,12 @@ template <class T>
 TStack<T>& TStack<T>::operator=(const TStack& stack)
 {
     if (&stack == this)
-        return this;
+        return *this;
 
     topIndex = stack.topIndex;
 
     if (maxSize == stack.maxSize) {
-        for (int i = 0; i < topIndex + 1; i++) {
+        for (int i = 0; i <= topIndex; i++) {
             stackArray[i] = stack.stackArray[i];
         }
         return *this;
@@ -57,9 +57,11 @@ TStack<T>& TStack<T>::operator=(const TStack& stack)
     delete[] stackArray;
 
     stackArray = new T[maxSize];
-    for (int i = 0; i < stack.topIndex + 1; i++) {
+    for (int i = 0; i <= topIndex; i++) {
         stackArray[i] = stack.stackArray[i];
     }
+
+    return *this;
 }
 
 template <class T>
@@ -78,12 +80,12 @@ template <class T>
 T TStack<T>::pop()
 {
     if (isEmpty())
-        throw -a;
+        throw -1;
 
     T temp = stackArray[topIndex];
-    topIndex == topIndex - 1;
+    topIndex--;
 
-    return temp
+    return temp;
 }
 
 template <class T>
@@ -100,4 +102,10 @@ template <class T>
 T TStack<T>::getTop()
 {
     return stackArray[topIndex];
+}
+
+template <class T>
+void TStack<T>::clear()
+{
+    topIndex = -1;
 }
