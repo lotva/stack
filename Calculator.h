@@ -1,7 +1,9 @@
 #pragma once
 
-#include "String"
 #include "TStack.h"
+#include <functional>
+#include <string>
+#include <unordered_map>
 
 using namespace std;
 
@@ -11,6 +13,22 @@ class Calculator {
 
     string infix;
     string postfix;
+
+    unordered_map<char, int> operationPriority = {
+        { '+', 1 },
+        { '-', 1 },
+        { '*', 2 },
+        { '/', 2 },
+        { '^', 3 }
+    };
+
+    unordered_map<char, function<double(double, double)>> operations = {
+        { '+', [](double a, double b) { return a + b; } },
+        { '-', [](double a, double b) { return a - b; } },
+        { '*', [](double a, double b) { return a * b; } },
+        { '/', [](double a, double b) { return a / b; } },
+        { '^', [](double a, double b) { return pow(a, b); } }
+    };
 
 public:
     Calculator();
@@ -30,5 +48,5 @@ public:
     double calculate();
 
     int stringToInt(char*);
-    double stringToInt(char*);
+    double stringToDouble(char*);
 };

@@ -1,5 +1,18 @@
 #include "Calculator.h"
 #include <cmath>
+#include <stdexcept>
+
+Calculator::Calculator()
+{
+    infix = "";
+    postfix = "";
+}
+
+int Calculator::getPriorityOf(char operation)
+{
+    auto it = operationPriority.find(operation);
+    return it != operationPriority.end() ? it->second : 0;
+}
 
 void Calculator::toPostfix()
 {
@@ -20,13 +33,15 @@ void Calculator::toPostfix()
             char a = charStack.pop();
             while (a != '(') {
                 postfix += a;
+                postfix += ' ';
                 a = charStack.pop();
             }
         }
 
-        else if (withParentheses[i] == '+' || withParentheses[i] == '-' || withParentheses[i] == '*' || withParentheses[i] == '/' || withParentheses[i] == '^') {
-            while (getPriorityOf(charStack.getTop()) >= getPriorityOf(withParentheses[i])) {
-                postfix += withParentheses[i];
+        else if (operations.count(withParentheses[i])) {
+            while (!charStack.isEmpty() && getPriorityOf(charStack.getTop()) >= getPriorityOf(withParentheses[i])) {
+                postfix += charStack.pop();
+                postfix += ' ';
             }
 
             charStack.push(withParentheses[i]);
@@ -41,46 +56,17 @@ double Calculator::calculatePostfix()
     for (int i = 0; i < postfix.length(); i++) {
         char currentChar = postfix[i];
 
-        if (currentChar >= '0' && currentChar <= '9') {
+        if (isdigit(currentChar)) {
             numberStack.push(currentChar - '0');
-        }
-
-        if (!(currentChar == '+' || currentChar == '-' || currentChar == '*' || currentChar == '/' || currentChar == '^')) {
-            throw -1;
-        }
-
-        double a = numberStack.pop();
-        double b = numberStack.pop();
-
-        switch (postfix[i]) {
-        case '+':
-            numberStack.push(a + b);
-        case '-':
-            numberStack.push(a - b);
-        case '*':
-            numberStack.push(a * b);
-        case '/':
-            numberStack.push(a / b);
-        case '^':
-            numberStack.push(pow(a, b));
-        default:
-            break;
+        } else if (operations.count(currentChar)) {
+            double b = numberStack.pop();
+            double a = numberStack.pop();
+            double result = operations[currentChar](a, b);
+            numberStack.push(result);
+        } else {
+            throw invalid_argument("Unknown operator in postfix expression");
         }
     }
-}
 
-int Calculator::getPriorityOf(char operation)
-{
-    switch (operation) {
-    case '+':
-    case '-':
-        return 1;
-    case '*':
-    case '/':
-        return 2;
-    case '^':
-        return 3;
-    default:
-        return 0;
-    }
+    return numberStack.pop();
 }
