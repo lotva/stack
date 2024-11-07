@@ -23,7 +23,7 @@ public:
     string getPostfix();
     void setPostfix(string);
 
-    void convert();
+    void toPostfix();
 
     double calculatePostfix();
 

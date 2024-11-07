@@ -1,5 +1,5 @@
 #include "Calculator.h"
-#include "cmath"
+#include <cmath>
 
 double Calculator::calculatePostfix()
 {
@@ -9,27 +9,27 @@ double Calculator::calculatePostfix()
         char currentChar = postfix[i];
 
         if (currentChar >= '0' && currentChar <= '9') {
-            numberStack.Push(currentChar - '0');
+            numberStack.push(currentChar - '0');
         }
 
         if (!(currentChar == '+' || currentChar == '-' || currentChar == '*' || currentChar == '/' || currentChar == '^')) {
             throw -1;
         }
 
-        double a = numberStack.Pop();
-        double b = numberStack.Pop();
+        double a = numberStack.pop();
+        double b = numberStack.pop();
 
         switch (postfix[i]) {
         case '+':
-            numberStack.Push(a + b);
+            numberStack.push(a + b);
         case '-':
-            numberStack.Push(a - b);
+            numberStack.push(a - b);
         case '*':
-            numberStack.Push(a * b);
+            numberStack.push(a * b);
         case '/':
-            numberStack.Push(a / b);
+            numberStack.push(a / b);
         case '^':
-            numberStack.Push(pow(a, b));
+            numberStack.push(pow(a, b));
         default:
             break;
         }
