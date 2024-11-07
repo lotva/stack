@@ -129,7 +129,6 @@
   <ItemGroup>
     <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TStack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calculator.h" />
