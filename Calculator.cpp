@@ -1,6 +1,39 @@
 #include "Calculator.h"
 #include <cmath>
 
+void Calculator::toPostfix()
+{
+    postfix = "";
+    charStack.clear();
+
+    string withParentheses = "(" + infix + ")";
+    for (int i = 0; i < withParentheses.length(); i++) {
+        if (withParentheses[i] == '(') {
+            charStack.push('(');
+        }
+
+        else if (isdigit(withParentheses[i])) {
+            postfix += withParentheses[i];
+        }
+
+        else if (withParentheses[i] == ')') {
+            char a = charStack.pop();
+            while (a != '(') {
+                postfix += a;
+                a = charStack.pop();
+            }
+        }
+
+        else if (withParentheses[i] == '+' || withParentheses[i] == '-' || withParentheses[i] == '*' || withParentheses[i] == '/' || withParentheses[i] == '^') {
+            while (getPriorityOf(charStack.getTop()) >= getPriorityOf(withParentheses[i])) {
+                postfix += withParentheses[i];
+            }
+
+            charStack.push(withParentheses[i]);
+        }
+    }
+}
+
 double Calculator::calculatePostfix()
 {
     numberStack.clear();
