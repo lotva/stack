@@ -21,18 +21,18 @@ class TCalculator {
     };
 
     std::unordered_map<char, std::function<double(double, double)>> operations = {
-        { '+', [](double a, double b) { return std::round((a + b) * 100.0) / 100.0; } },
+        { '+', [](double a, double b) { return a + b; } },
 
-        { '-', [](double a, double b) { return std::round((a - b) * 100.0) / 100.0; } },
+        { '-', [](double a, double b) { return a - b; } },
 
-        { '*', [](double a, double b) { return std::round((a * b) * 100.0) / 100.0; } },
+        { '*', [](double a, double b) { return a * b; } },
 
         { '/', [](double a, double b) {
             if (b == 0) {
                 throw std::runtime_error("Division by zero!");
             }
             
-            return std::round((a / b) * 100.0) / 100.0; } },
+            return a / b; } },
 
         { '^', [](double a, double b) { return pow(a, b); } }
     };

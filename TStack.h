@@ -4,162 +4,206 @@
 #include <string>
 
 template <class T>
+struct Node {
+    T data;
+    Node* next;
+};
+
+template <class T>
 class TStack {
-    int maxSize;
-    int topIndex;
-    T* stackArray;
+    Node<T>* top;
 
 public:
-    TStack(int _maxSize = 10);
+    TStack();
     ~TStack();
     TStack(const TStack&);
 
     bool isEmpty() const;
-    bool isFull() const;
 
     TStack& operator=(const TStack&);
-    bool operator==(const TStack<T>&) const;
-    bool operator!=(const TStack<T>&) const;
+    bool operator==(const TStack&) const;
+    bool operator!=(const TStack&) const;
 
-    void push(T value);
+    void push(T);
     T pop();
-    T top() const;
+    T getTop() const;
     void clear();
-
-    int getCurrentSize();
+    bool check(std::string);
 
     friend std::istream& operator>>(std::istream& in, TStack& s)
     {
         T value;
-
-        std::cout << "Введите элементы стека (введите 0 для завершения): ";
-        while (in >> value && value != 0) {
-            s.push(value);
-        }
-
+        in >> value;
+        s.push(value);
         return in;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const TStack& s)
     {
-        for (int i = 0; i <= s.topIndex; i++) {
-            out << s.stackArray[i] << " ";
-        }
+        if (s.isEmpty())
+            throw std::out_of_range("Stack is empty");
+        out << s.top->data;
         return out;
     }
 };
 
 template <class T>
-TStack<T>::TStack(int _maxSize)
+TStack<T>::TStack()
+    : top(nullptr)
 {
-    if (_maxSize <= 0)
-        throw std::exception("Negative size.");
-
-    maxSize = _maxSize;
-    topIndex = -1;
-    stackArray = new T[_maxSize];
 }
 
 template <class T>
 TStack<T>::~TStack()
 {
-    delete[] stackArray;
-    stackArray = nullptr;
+    clear();
 }
 
 template <class T>
-TStack<T>::TStack(const TStack<T>& st)
+TStack<T>::TStack(const TStack<T>& s)
+    : top(nullptr)
 {
-    maxSize = st.maxSize;
-    topIndex = st.topIndex;
-    stackArray = new T[maxSize];
+    if (s.top == nullptr) {
+        top = nullptr;
+    } else {
+        Node<T>* current = s.top;
+        Node<T>* last = nullptr;
+        while (current != nullptr) {
+            Node<T>* temp = new Node<T>;
+            temp->data = current->data;
+            temp->next = nullptr;
 
-    for (int i = 0; i <= topIndex; i++) {
-        stackArray[i] = st.stackArray[i];
+            if (last == nullptr) {
+                top = temp;
+            } else {
+                last->next = temp;
+            }
+
+            last = temp;
+            current = current->next;
+        }
     }
 }
 
 template <class T>
-TStack<T>& TStack<T>::operator=(const TStack& stack)
+TStack<T>& TStack<T>::operator=(const TStack<T>& s)
 {
-    std::swap(maxSize, stack.maxSize);
-    std::swap(topIndex, stack.topIndex);
-    std::swap(stackArray, stack.stackArray);
+    if (this == &s)
+        return *this;
+
+    clear();
+
+    if (s.top == nullptr) {
+        top = nullptr;
+    } else {
+        Node<T>* current = s.top;
+        Node<T>* last = nullptr;
+        while (current != nullptr) {
+            Node<T>* temp = new Node<T>;
+            temp->data = current->data;
+            temp->next = nullptr;
+
+            if (last == nullptr) {
+                top = temp;
+            } else {
+                last->next = temp;
+            }
+
+            last = temp;
+            current = current->next;
+        }
+    }
+
     return *this;
 }
 
 template <class T>
 bool TStack<T>::isEmpty() const
 {
-    return topIndex == -1;
-}
-
-template <class T>
-bool TStack<T>::isFull() const
-{
-    return topIndex + 1 == maxSize;
+    return top == nullptr;
 }
 
 template <class T>
 T TStack<T>::pop()
 {
     if (isEmpty())
-        throw std::exception("Stack is empty.");
+        throw std::out_of_range("Stack is empty");
 
-    T temp = stackArray[topIndex];
-    topIndex--;
+    Node<T>* temp = top;
+    T tempData = top->data;
+    top = top->next;
+    delete temp;
 
-    return temp;
+    return tempData;
 }
 
 template <class T>
 void TStack<T>::push(T value)
 {
-    if (isFull())
-        throw std::exception("Stack is full");
-
-    topIndex++;
-    stackArray[topIndex] = value;
+    Node<T>* temp = new Node<T>;
+    temp->data = value;
+    temp->next = top;
+    top = temp;
 }
 
 template <class T>
-T TStack<T>::top() const
+T TStack<T>::getTop() const
 {
     if (isEmpty())
         throw std::underflow_error("Stack is empty. Cannot retrieve top element.");
 
-    return stackArray[topIndex];
+    return top->data;
 }
 
 template <class T>
 void TStack<T>::clear()
 {
-    topIndex = -1;
+    while (!isEmpty()) {
+        pop();
+    }
 }
 
 template <class T>
-int TStack<T>::getCurrentSize()
+bool TStack<T>::check(std::string str)
 {
-    return topIndex;
-}
-
-template <class T>
-bool TStack<T>::operator==(const TStack<T>& st) const
-{
-    if (topIndex != st.topIndex) {
-        return false;
+    TStack<char> s;
+    bool res = true;
+    for (int i = 0; i < str.size(); i++) {
+        if (str[i] == '(') {
+            s.push('(');
+        }
+        if (str[i] == ')') {
+            if (s.isEmpty()) {
+                return false;
+            }
+            s.pop();
+        }
     }
-
-    for (int i = 0; i <= topIndex; i++) {
-        if (stackArray[i] != st.stackArray[i])
-            return false;
-    }
-
     return true;
 }
 
 template <class T>
-bool TStack<T>::operator!=(const TStack<T>& st) const
+bool TStack<T>::operator==(const TStack<T>& other) const
 {
-    return !(*this == st);
+    Node<T>* currentTop = top;
+    Node<T>* otherCurrentTop = other.top;
+    while (currentTop != nullptr && otherCurrentTop != nullptr) {
+        if (currentTop->data != otherCurrentTop->data) {
+            return false;
+        }
+        currentTop = currentTop->next;
+        otherCurrentTop = otherCurrentTop->next;
+    }
+
+    if (currentTop == otherCurrentTop) {
+        return true;
+    }
+
+    return false;
+}
+
+template <class T>
+bool TStack<T>::operator!=(const TStack<T>& stack) const
+{
+    return !(*this == stack);
 }

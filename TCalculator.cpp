@@ -5,8 +5,8 @@
 TCalculator::TCalculator()
     : infix("")
     , postfix("")
-    , numberStack(100)
-    , charStack(100)
+    , numberStack()
+    , charStack()
 {
 }
 
@@ -40,47 +40,57 @@ void TCalculator::toPostfix()
 {
     postfix = "";
     charStack.clear();
-
-    int balance = 0;
-
-    std::string withParentheses = "(" + infix + ")";
-    for (int i = 0; i < withParentheses.length(); i++) {
-        if (withParentheses[i] == '(') {
-            charStack.push('(');
-            balance++;
-        }
-
-        else if (isdigit(withParentheses[i]) || withParentheses[i] == '.' || (i < withParentheses.length() && isUnaryMinus(i))) {
-            size_t index = i;
-            while (index < withParentheses.length() && ((withParentheses[index] >= '0' && withParentheses[index] <= '9') || withParentheses[index] == '.' || isUnaryMinus(index))) {
-                postfix += withParentheses[index];
-                index++;
+    std::string number = "";
+    int operandCount = 0;
+    int operatorCount = 0;
+    for (int i = 0; i < infix.size(); i++) {
+        char sim = infix[i];
+        if (isdigit(sim) || sim == '.') {
+            number += sim; // ñîáèðàåì ÷èñëî (âêëþ÷àÿ äåñÿòè÷íóþ òî÷êó)
+            if (i == infix.size() - 1 || (!isdigit(infix[i + 1]) && infix[i + 1] != '.')) // ïðîâåðêà, ÷òî ïîñëå ÷èñëà èäåò ïðîáåë èëè ñèìâîë îïåðàöèè
+            {
+                postfix += number + " ";
+                number = "";
+                operandCount++; // äîáàâëÿåì îïåðàíä
             }
-            postfix += " ";
-            i = index - 1;
-        }
-
-        else if (withParentheses[i] == ')') {
-            char a = charStack.pop();
-            while (a != '(') {
-                postfix += a;
-                postfix += ' ';
-                a = charStack.pop();
-            }
-            balance--;
-            if (balance < 0) {
-                throw std::invalid_argument("Unmatched closing parenthesis");
-            }
-        }
-
-        else if (operations.count(withParentheses[i])) {
-            while (!charStack.isEmpty() && getPriorityOf(charStack.top()) >= getPriorityOf(withParentheses[i])) {
+        } else if (sim == '(') {
+            charStack.push(sim);
+        } else if (sim == ')') {
+            // bool matched = false;
+            while (!charStack.isEmpty() && charStack.getTop() != '(') {
                 postfix += charStack.pop();
-                postfix += ' ';
+                postfix += " ";
+                operatorCount++;
             }
-
-            charStack.push(withParentheses[i]);
+            if (charStack.isEmpty()) {
+                throw "Îøèáêà: ëèøíÿÿ çàêðûâàþùàÿ ñêîáêà";
+            }
+            charStack.pop();
+        } else if (sim == '+' || sim == '-' || sim == '*' || sim == '/' || sim == '^') {
+            if (sim == '-' && (i == 0 || infix[i - 1] == '(' || infix[i - 1] == '+' || infix[i - 1] == '-' || infix[i - 1] == '*' || infix[i - 1] == '/')) {
+                postfix += "0 ";
+            }
+            while (!charStack.isEmpty() && getPriorityOf(charStack.getTop()) >= getPriorityOf(sim)) {
+                postfix += charStack.pop();
+                postfix += " ";
+                operatorCount++;
+            }
+            charStack.push(sim);
+        } else if (!isspace(sim)) {
+            throw -1;
         }
+    }
+    while (!charStack.isEmpty()) {
+        char op = charStack.pop();
+        if (op == '(') {
+            throw std::invalid_argument("Unmatched opening parenthesis.");
+        }
+        postfix += op;
+        postfix += " ";
+        operatorCount++;
+    }
+    if (operandCount - operatorCount != 1) {
+        throw std::invalid_argument("Too much operands.");
     }
 }
 
@@ -99,7 +109,7 @@ double TCalculator::calculatePostfix()
                 index++;
             }
 
-            numberStack.push(std::stod(number));
+            numberStack.push(stringToDouble(number));
             i = index;
         }
 
@@ -119,6 +129,10 @@ double TCalculator::calculate()
     std::string str = "(" + infix + ")";
     numberStack.clear();
     charStack.clear();
+
+    if (!charStack.check(infix)) {
+        throw -1;
+    }
 
     int balance = 0;
 
@@ -147,7 +161,7 @@ double TCalculator::calculate()
                 throw std::invalid_argument("Unmatched closing parenthesis");
             }
 
-            while (!charStack.isEmpty() && charStack.top() != '(') {
+            while (!charStack.isEmpty() && charStack.getTop() != '(') {
                 char currentChar = charStack.pop();
                 double b = numberStack.pop();
                 double a = numberStack.pop();
@@ -155,7 +169,7 @@ double TCalculator::calculate()
             }
             charStack.pop();
         } else if (operations.count(tmp)) {
-            while (!charStack.isEmpty() && getPriorityOf(charStack.top()) >= getPriorityOf(tmp)) {
+            while (!charStack.isEmpty() && getPriorityOf(charStack.getTop()) >= getPriorityOf(tmp)) {
                 char currentChar = charStack.pop();
                 double b = numberStack.pop();
                 double a = numberStack.pop();
